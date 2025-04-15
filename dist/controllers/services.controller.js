@@ -1,32 +1,24 @@
-// controllers/services.controller.ts
-import { Request, Response, NextFunction } from 'express';
-import { Category } from '../models/category.model';
-import { SubCategory } from '../models/subcategory.model';
-import { Service } from '../models/service.model';
-import { SubService } from '../models/subservice.model';
-
-export const postServiceCategories = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.postServiceCategories = void 0;
+const category_model_1 = require("../models/category.model");
+const subcategory_model_1 = require("../models/subcategory.model");
+const service_model_1 = require("../models/service.model");
+const subservice_model_1 = require("../models/subservice.model");
+const postServiceCategories = async (req, res, next) => {
     try {
         const { name, image, banner, subCategories } = req.body;
-
         // 1. Create Category
-        const newCategory = new Category({ name, image, banner });
+        const newCategory = new category_model_1.Category({ name, image, banner });
         const savedCategory = await newCategory.save();
-
         // Arrays to hold docs for bulk insert
-        const subCategoryDocs: any[] = [];
-        const serviceDocs: any[] = [];
-        const subServiceDocs: any[] = [];
-
+        const subCategoryDocs = [];
+        const serviceDocs = [];
+        const subServiceDocs = [];
         const subCategoryMap = new Map();
         const serviceMap = new Map();
-
         // Generate data for subcategories, services, and subservices
-        subCategories.forEach((sub: any, subIndex: number) => {
+        subCategories.forEach((sub, subIndex) => {
             const tempSubCatId = `sub_${subIndex}`;
             subCategoryDocs.push({
                 name: sub.name,
@@ -34,8 +26,7 @@ export const postServiceCategories = async (
                 categoryId: savedCategory._id,
                 _tempId: tempSubCatId
             });
-
-            (sub.services || []).forEach((service: any, servIndex: number) => {
+            (sub.services || []).forEach((service, servIndex) => {
                 const tempServiceId = `srv_${subIndex}_${servIndex}`;
                 serviceDocs.push({
                     name: service.name,
@@ -43,8 +34,7 @@ export const postServiceCategories = async (
                     _tempId: tempServiceId,
                     _parentTempId: tempSubCatId
                 });
-
-                (service.subServices || []).forEach((subService: any) => {
+                (service.subServices || []).forEach((subService) => {
                     subServiceDocs.push({
                         name: subService.name,
                         image: subService.image,
@@ -53,56 +43,43 @@ export const postServiceCategories = async (
                 });
             });
         });
-
         // 2. Insert subcategories
-        const insertedSubCategories = await SubCategory.insertMany(
-            subCategoryDocs.map(({ _tempId, ...doc }) => doc)
-        );
+        const insertedSubCategories = await subcategory_model_1.SubCategory.insertMany(subCategoryDocs.map(({ _tempId, ...doc }) => doc));
         insertedSubCategories.forEach((doc, i) => {
             const tempId = subCategoryDocs[i]._tempId;
             subCategoryMap.set(tempId, doc._id);
         });
-
         // 3. Replace temp subCategory IDs in services
         const finalServiceDocs = serviceDocs.map(service => ({
             name: service.name,
             image: service.image,
             subCategoryId: subCategoryMap.get(service._parentTempId)
         }));
-
-        const insertedServices = await Service.insertMany(finalServiceDocs);
-        insertedServices.forEach((doc: any, i: number) => {
+        const insertedServices = await service_model_1.Service.insertMany(finalServiceDocs);
+        insertedServices.forEach((doc, i) => {
             const tempId = serviceDocs[i]._tempId;
             serviceMap.set(tempId, doc._id);
         });
-
         // 4. Replace temp service IDs in subServices
         const finalSubServiceDocs = subServiceDocs.map(subService => ({
             name: subService.name,
             image: subService.image,
             serviceId: serviceMap.get(subService._parentTempId)
         }));
-
-        await SubService.insertMany(finalSubServiceDocs);
-
+        await subservice_model_1.SubService.insertMany(finalSubServiceDocs);
         res.status(201).json({
             message: 'Category, subcategories, services, and subservices saved successfully',
             data: savedCategory
         });
-    } catch (error) {
+    }
+    catch (error) {
         next(error);
     }
 };
-
-
-
-const getAllServiceCategories = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
+exports.postServiceCategories = postServiceCategories;
+const getAllServiceCategories = async (req, res, next) => {
     try {
-        const categories = await Category.aggregate([
+        const categories = await category_model_1.Category.aggregate([
             {
                 $lookup: {
                     from: "subcategories",
@@ -183,18 +160,13 @@ const getAllServiceCategories = async (
                 }
             }
         ]);
-
         res.status(200).json(categories);
-    } catch (error) {
+    }
+    catch (error) {
         next(error);
     }
 };
-
-
-
-
-
-export default {
-    postServiceCategories,
+exports.default = {
+    postServiceCategories: exports.postServiceCategories,
     getAllServiceCategories
 };

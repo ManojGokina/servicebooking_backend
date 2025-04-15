@@ -10,7 +10,7 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
-    req.user = decoded;
+    // req.user = decoded;
     next();
   } catch (error) {
     next(new ApiError(401, 'Invalid token'));
@@ -19,9 +19,9 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
 
 export const authorize = (roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (!roles.includes(req.user?.role)) {
-      return next(new ApiError(403, 'Unauthorized'));
-    }
-    next();
+    // if (!roles.includes(req.user?.role)) {
+    //   return next(new ApiError(403, 'Unauthorized'));
+    // }
+    // next();
   };
 };
