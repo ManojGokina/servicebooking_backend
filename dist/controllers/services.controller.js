@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.postServiceCategories = void 0;
 const category_model_1 = require("../models/category.model");
 const subcategory_model_1 = require("../models/subcategory.model");
 const service_model_1 = require("../models/service.model");
@@ -76,9 +75,9 @@ const postServiceCategories = async (req, res, next) => {
         next(error);
     }
 };
-exports.postServiceCategories = postServiceCategories;
 const getAllServiceCategories = async (req, res, next) => {
     try {
+        console.log("api called");
         const categories = await category_model_1.Category.aggregate([
             {
                 $lookup: {
@@ -160,13 +159,17 @@ const getAllServiceCategories = async (req, res, next) => {
                 }
             }
         ]);
-        res.status(200).json(categories);
+        res.status(200).json({
+            message: 'Categories fetched successfully',
+            data: categories
+        });
     }
     catch (error) {
+        res.status(500).json({ message: 'Failed to fetch categories' });
         next(error);
     }
 };
 exports.default = {
-    postServiceCategories: exports.postServiceCategories,
+    postServiceCategories,
     getAllServiceCategories
 };

@@ -10,6 +10,7 @@ const auth_routes_1 = require("./routes/auth.routes");
 const error_middleware_1 = require("./middleware/error.middleware");
 const logger_1 = require("./utils/logger");
 const services_routes_1 = require("./routes/services.routes");
+const cart_routes_1 = require("./routes/cart.routes");
 const app = (0, express_1.default)();
 // Middleware
 app.use(express_1.default.json());
@@ -23,6 +24,7 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/auth', auth_routes_1.authRoutes);
 app.use('/api/services', services_routes_1.serviceRoutes);
+app.use('/api/cartservice', cart_routes_1.cartRoutes);
 // Error handling
 app.use(error_middleware_1.errorHandler);
 exports.default = app;

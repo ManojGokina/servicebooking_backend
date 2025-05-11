@@ -5,7 +5,7 @@ import { SubCategory } from '../models/subcategory.model';
 import { Service } from '../models/service.model';
 import { SubService } from '../models/subservice.model';
 
-export const postServiceCategories = async (
+const postServiceCategories = async (
     req: Request,
     res: Response,
     next: NextFunction
@@ -102,6 +102,7 @@ const getAllServiceCategories = async (
     next: NextFunction
 ) => {
     try {
+        console.log("api called")
         const categories = await Category.aggregate([
             {
                 $lookup: {
@@ -184,15 +185,15 @@ const getAllServiceCategories = async (
             }
         ]);
 
-        res.status(200).json(categories);
+        res.status(200).json({
+            message: 'Categories fetched successfully',
+            data: categories
+        });
     } catch (error) {
+        res.status(500).json({ message: 'Failed to fetch categories' });
         next(error);
     }
 };
-
-
-
-
 
 export default {
     postServiceCategories,
